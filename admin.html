@@ -3,152 +3,106 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notes Admin - Living Letter</title>
+  <title>Notes — Living Letter</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: 'Crimson Pro', serif;
-      background: #fff9f0;
-      color: #2c2c2c;
-      line-height: 1.6;
-      padding: 2rem;
-    }
-    
-    .container {
-      max-width: 900px;
+    .admin-container {
+      max-width: 700px;
       margin: 0 auto;
+      padding: 100px 24px 60px;
     }
     
-    h1 {
+    .admin-title {
+      font-family: 'Caveat', cursive;
       font-size: 2.5rem;
-      margin-bottom: 0.5rem;
       color: #5b5bd6;
+      margin-bottom: 0.25rem;
     }
     
-    .subtitle {
+    .admin-subtitle {
       color: rgba(44, 44, 44, 0.6);
       margin-bottom: 2rem;
-      font-size: 1.1rem;
     }
     
-    .stats {
+    .stats-row {
       display: flex;
-      gap: 1.5rem;
+      gap: 1rem;
       margin-bottom: 2rem;
-      flex-wrap: wrap;
     }
     
     .stat-card {
       background: white;
       padding: 1rem 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      border: 1px solid rgba(44, 44, 44, 0.1);
-    }
-    
-    .stat-label {
-      font-size: 0.85rem;
-      color: rgba(44, 44, 44, 0.6);
-      margin-bottom: 0.25rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid rgba(44, 44, 44, 0.08);
+      text-align: center;
+      min-width: 100px;
     }
     
     .stat-value {
-      font-size: 1.5rem;
-      font-weight: 600;
+      font-family: 'Caveat', cursive;
+      font-size: 2rem;
       color: #5b5bd6;
+      line-height: 1;
     }
     
-    .loading, .error {
-      text-align: center;
-      padding: 3rem;
-      color: rgba(44, 44, 44, 0.6);
-      font-style: italic;
-    }
-    
-    .error {
-      color: #d32f2f;
-    }
-    
-    .notes-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
+    .stat-label {
+      font-size: 0.8rem;
+      color: rgba(44, 44, 44, 0.5);
+      margin-top: 0.25rem;
     }
     
     .note-card {
       background: white;
       padding: 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      border: 1px solid rgba(44, 44, 44, 0.1);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    
-    .note-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid rgba(44, 44, 44, 0.08);
     }
     
     .note-header {
       display: flex;
       justify-content: space-between;
-      align-items: start;
+      align-items: flex-start;
       margin-bottom: 1rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid rgba(44, 44, 44, 0.1);
     }
     
-    .note-meta {
-      flex: 1;
-    }
-    
-    .note-id {
+    .note-topic {
       font-family: 'Caveat', cursive;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       color: #5b5bd6;
-      margin-bottom: 0.25rem;
-    }
-    
-    .note-context {
-      font-size: 0.9rem;
-      color: rgba(44, 44, 44, 0.7);
-      font-style: italic;
-      margin-bottom: 0.5rem;
-    }
-    
-    .note-prompt {
-      font-size: 0.95rem;
-      color: rgba(44, 44, 44, 0.8);
-      margin-bottom: 0.5rem;
     }
     
     .note-date {
-      font-size: 0.85rem;
-      color: rgba(44, 44, 44, 0.5);
-      white-space: nowrap;
+      font-size: 0.8rem;
+      color: rgba(44, 44, 44, 0.4);
+    }
+    
+    .note-prompt {
+      font-size: 0.9rem;
+      color: rgba(44, 44, 44, 0.6);
+      font-style: italic;
+      margin-bottom: 0.75rem;
     }
     
     .note-message {
       background: #fff9f0;
       padding: 1rem;
-      border-radius: 6px;
+      border-radius: 8px;
       border-left: 3px solid #5b5bd6;
-      margin-bottom: 0.75rem;
-      white-space: pre-wrap;
       line-height: 1.7;
+      white-space: pre-wrap;
     }
     
     .note-email {
-      font-size: 0.9rem;
-      color: rgba(44, 44, 44, 0.6);
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: rgba(44, 44, 44, 0.5);
     }
     
     .note-email a {
@@ -156,161 +110,146 @@
       text-decoration: none;
     }
     
-    .note-email a:hover {
-      text-decoration: underline;
-    }
+    .note-email a:hover { text-decoration: underline; }
     
     .empty-state {
       text-align: center;
       padding: 4rem 2rem;
-      color: rgba(44, 44, 44, 0.6);
+      color: rgba(44, 44, 44, 0.5);
     }
     
-    .empty-state-icon {
-      font-size: 4rem;
+    .empty-icon {
+      font-size: 3rem;
       margin-bottom: 1rem;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: rgba(44, 44, 44, 0.5);
+    }
+    
+    .error-state {
+      text-align: center;
+      padding: 3rem;
+      color: #dc2626;
     }
     
     .refresh-btn {
       position: fixed;
-      bottom: 2rem;
-      right: 2rem;
+      bottom: 24px;
+      right: 24px;
       background: #5b5bd6;
       color: white;
       border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      cursor: pointer;
+      padding: 0.75rem 1.25rem;
+      border-radius: 999px;
       font-family: 'Crimson Pro', serif;
-      font-size: 1rem;
+      font-size: 0.95rem;
+      cursor: pointer;
       box-shadow: 0 4px 12px rgba(91, 91, 214, 0.3);
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: transform 0.15s;
     }
     
-    .refresh-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(91, 91, 214, 0.4);
-    }
-    
-    .refresh-btn:active {
-      transform: translateY(0);
-    }
+    .refresh-btn:hover { transform: translateY(-2px); }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Submitted Notes</h1>
-    <p class="subtitle">All responses from visitors to your living letter</p>
+  <nav class="top-nav" aria-label="Site">
+    <a class="top-nav__link" href="index.html">Letter</a>
+    <a class="top-nav__link" href="writing.html">Writing</a>
+    <a class="top-nav__link" href="reading.html">Reading</a>
+  </nav>
+
+  <div class="admin-container">
+    <h1 class="admin-title">Submitted Notes</h1>
+    <p class="admin-subtitle">Responses from visitors</p>
     
-    <div class="stats" id="stats">
+    <div class="stats-row">
       <div class="stat-card">
-        <div class="stat-label">Total Notes</div>
-        <div class="stat-value" id="total-count">-</div>
+        <div class="stat-value" id="total-count">—</div>
+        <div class="stat-label">Total</div>
       </div>
       <div class="stat-card">
+        <div class="stat-value" id="email-count">—</div>
         <div class="stat-label">With Email</div>
-        <div class="stat-value" id="email-count">-</div>
       </div>
     </div>
     
-    <div id="content">
-      <div class="loading">Loading notes...</div>
+    <div id="notes-container">
+      <div class="loading">Loading...</div>
     </div>
   </div>
   
-  <button class="refresh-btn" onclick="loadNotes()">Refresh</button>
+  <button class="refresh-btn" onclick="loadNotes()">↻ Refresh</button>
   
   <script src="js/config.js"></script>
   <script>
-    const API_URL = window.CONFIG ? CONFIG.API_NOTES : 'https://personal-website-production-6937.up.railway.app/api/notes';
+    const $ = id => document.getElementById(id);
     
-    function formatDate(dateString) {
-      const date = new Date(dateString);
-      return date.toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
     }
     
     function renderNotes(notes) {
-      const content = document.getElementById('content');
+      const container = $('notes-container');
       
-      if (!notes || notes.length === 0) {
-        content.innerHTML = `
+      if (!notes?.length) {
+        container.innerHTML = `
           <div class="empty-state">
-            <div class="empty-state-icon">📭</div>
-            <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">No notes yet</p>
-            <p>When visitors submit responses, they'll appear here.</p>
-          </div>
-        `;
+            <div class="empty-icon">📭</div>
+            <p>No notes yet</p>
+            <p style="font-size: 0.9rem; margin-top: 0.5rem;">Responses will appear here</p>
+          </div>`;
+        $('total-count').textContent = '0';
+        $('email-count').textContent = '0';
         return;
       }
       
-      // Update stats
-      const totalCount = notes.length;
-      const emailCount = notes.filter(n => n.email).length;
-      document.getElementById('total-count').textContent = totalCount;
-      document.getElementById('email-count').textContent = emailCount;
+      $('total-count').textContent = notes.length;
+      $('email-count').textContent = notes.filter(n => n.email).length;
       
-      // Render notes (newest first)
-      const notesHTML = notes.map(note => {
-        const emailHTML = note.email 
-          ? `<div class="note-email">📧 <a href="mailto:${note.email}">${note.email}</a></div>`
-          : '<div class="note-email" style="color: rgba(44, 44, 44, 0.4);">No email provided</div>';
-        
-        return `
-          <div class="note-card">
-            <div class="note-header">
-              <div class="note-meta">
-                <div class="note-id">${note.note_id || 'Unknown'}</div>
-                ${note.context ? `<div class="note-context">${note.context}</div>` : ''}
-                ${note.note_prompt ? `<div class="note-prompt">${note.note_prompt}</div>` : ''}
-              </div>
-              <div class="note-date">${formatDate(note.created_at || note.timestamp)}</div>
-            </div>
-            <div class="note-message">${note.message || ''}</div>
-            ${emailHTML}
+      container.innerHTML = notes.map(note => `
+        <div class="note-card">
+          <div class="note-header">
+            <span class="note-topic">${escapeHtml(note.note_id || 'Note')}</span>
+            <span class="note-date">${formatDate(note.created_at || note.timestamp)}</span>
           </div>
-        `;
-      }).join('');
-      
-      content.innerHTML = `<div class="notes-list">${notesHTML}</div>`;
+          ${note.note_prompt ? `<p class="note-prompt">${escapeHtml(note.note_prompt)}</p>` : ''}
+          <div class="note-message">${escapeHtml(note.message || '')}</div>
+          <div class="note-email">
+            ${note.email ? `📧 <a href="mailto:${escapeHtml(note.email)}">${escapeHtml(note.email)}</a>` : 'No email provided'}
+          </div>
+        </div>
+      `).join('');
     }
     
     async function loadNotes() {
-      const content = document.getElementById('content');
-      content.innerHTML = '<div class="loading">Loading notes...</div>';
+      $('notes-container').innerHTML = '<div class="loading">Loading...</div>';
       
       try {
-        const response = await fetch(API_URL);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        const notes = data.notes || data || [];
-        renderNotes(notes);
-      } catch (error) {
-        console.error('Error loading notes:', error);
-        content.innerHTML = `
-          <div class="error">
-            <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">Failed to load notes</p>
-            <p>${error.message}</p>
-            <p style="margin-top: 1rem; font-size: 0.9rem;">Make sure your Railway service is online and the API is accessible.</p>
-          </div>
-        `;
+        const res = await fetch(CONFIG.API_NOTES);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        renderNotes(data.notes || []);
+      } catch (e) {
+        $('notes-container').innerHTML = `
+          <div class="error-state">
+            <p>Failed to load notes</p>
+            <p style="font-size: 0.9rem; margin-top: 0.5rem;">${e.message}</p>
+          </div>`;
       }
     }
     
-    // Load notes on page load
     loadNotes();
-    
-    // Auto-refresh every 30 seconds
-    setInterval(loadNotes, 30000);
+    setInterval(loadNotes, 60000); // Refresh every minute
   </script>
 </body>
 </html>

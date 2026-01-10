@@ -3,385 +3,281 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>System Status - Living Letter</title>
+  <title>System Status — Living Letter</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    body {
-      font-family: 'Crimson Pro', serif;
-      background: #fff9f0;
-      color: #2c2c2c;
-      line-height: 1.6;
-      padding: 2rem;
-      min-height: 100vh;
-    }
-    
-    .container {
-      max-width: 700px;
+    /* Status-specific styles */
+    .status-container {
+      max-width: 600px;
       margin: 0 auto;
+      padding: 100px 24px 60px;
     }
     
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
+    .status-title {
+      font-family: 'Caveat', cursive;
+      font-size: 2.5rem;
       color: #5b5bd6;
+      margin-bottom: 0.25rem;
     }
     
-    .subtitle {
+    .status-subtitle {
       color: rgba(44, 44, 44, 0.6);
       margin-bottom: 2rem;
+      font-size: 1rem;
     }
     
     .status-card {
       background: white;
       border-radius: 12px;
-      padding: 1.5rem;
+      padding: 1.25rem 1.5rem;
       margin-bottom: 1rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      border: 1px solid rgba(44, 44, 44, 0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid rgba(44, 44, 44, 0.08);
     }
     
     .status-header {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      margin-bottom: 0.75rem;
     }
     
     .status-indicator {
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       flex-shrink: 0;
     }
     
-    .status-indicator.checking { background: #ffc107; animation: pulse 1s infinite; }
-    .status-indicator.ok { background: #4caf50; }
-    .status-indicator.error { background: #f44336; }
+    .status-indicator.checking { background: #f59e0b; animation: pulse 1s infinite; }
+    .status-indicator.ok { background: #22c55e; }
+    .status-indicator.error { background: #ef4444; }
     
     @keyframes pulse {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+      50% { opacity: 0.4; }
     }
     
-    .status-title {
-      font-weight: 600;
-      font-size: 1.1rem;
+    .status-name {
+      font-weight: 500;
+      font-size: 1.05rem;
+      flex: 1;
     }
+    
+    .status-badge {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-weight: 500;
+    }
+    
+    .status-badge.ok { background: rgba(34, 197, 94, 0.15); color: #16a34a; }
+    .status-badge.error { background: rgba(239, 68, 68, 0.15); color: #dc2626; }
+    .status-badge.checking { background: rgba(245, 158, 11, 0.15); color: #d97706; }
     
     .status-details {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(44, 44, 44, 0.06);
       font-size: 0.9rem;
       color: rgba(44, 44, 44, 0.7);
-      margin-left: 1.5rem;
     }
     
     .status-details code {
-      background: rgba(91, 91, 214, 0.1);
+      background: rgba(91, 91, 214, 0.08);
       padding: 0.15rem 0.4rem;
       border-radius: 4px;
-      font-family: monospace;
-      font-size: 0.85rem;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.8rem;
     }
     
-    .status-details .error-msg {
-      color: #d32f2f;
-      margin-top: 0.5rem;
+    .config-box {
+      background: rgba(91, 91, 214, 0.06);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
     }
     
-    .status-details .success-msg {
-      color: #2e7d32;
-      margin-top: 0.5rem;
+    .config-box h3 {
+      font-family: 'Caveat', cursive;
+      font-size: 1.2rem;
+      color: #5b5bd6;
+      margin-bottom: 0.5rem;
     }
     
-    .actions {
-      margin-top: 2rem;
+    .config-row {
       display: flex;
-      gap: 1rem;
+      justify-content: space-between;
+      padding: 0.3rem 0;
+    }
+    
+    .config-label { color: rgba(44, 44, 44, 0.6); }
+    .config-value { font-weight: 500; }
+    
+    .action-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
       flex-wrap: wrap;
     }
     
     .btn {
-      padding: 0.75rem 1.5rem;
+      padding: 0.6rem 1.2rem;
       border-radius: 8px;
-      cursor: pointer;
       font-family: 'Crimson Pro', serif;
-      font-size: 1rem;
+      font-size: 0.95rem;
+      cursor: pointer;
       border: none;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: all 0.15s;
     }
     
-    .btn:hover {
-      transform: translateY(-2px);
-    }
+    .btn:hover { transform: translateY(-1px); }
     
     .btn-primary {
       background: #5b5bd6;
       color: white;
-      box-shadow: 0 4px 12px rgba(91, 91, 214, 0.3);
     }
     
-    .btn-secondary {
-      background: white;
+    .btn-ghost {
+      background: transparent;
       color: #5b5bd6;
-      border: 1px solid #5b5bd6;
-    }
-    
-    .info-box {
-      background: rgba(91, 91, 214, 0.1);
-      border-radius: 8px;
-      padding: 1rem;
-      margin-top: 2rem;
-      font-size: 0.9rem;
-    }
-    
-    .info-box h3 {
-      font-size: 1rem;
-      margin-bottom: 0.5rem;
-      color: #5b5bd6;
-    }
-    
-    .info-box ul {
-      margin-left: 1.25rem;
-    }
-    
-    .info-box li {
-      margin-bottom: 0.25rem;
+      border: 1px solid rgba(91, 91, 214, 0.3);
     }
     
     .timestamp {
+      text-align: center;
       font-size: 0.8rem;
-      color: rgba(44, 44, 44, 0.5);
+      color: rgba(44, 44, 44, 0.4);
       margin-top: 2rem;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>System Status</h1>
-    <p class="subtitle">Connection diagnostics for your Living Letter</p>
+  <nav class="top-nav" aria-label="Site">
+    <a class="top-nav__link" href="index.html">Letter</a>
+    <a class="top-nav__link" href="writing.html">Writing</a>
+    <a class="top-nav__link" href="reading.html">Reading</a>
+  </nav>
+
+  <div class="status-container">
+    <h1 class="status-title">System Status</h1>
+    <p class="status-subtitle">Connection diagnostics</p>
     
-    <div class="status-card" id="backend-status">
+    <div class="status-card" id="backend-card">
       <div class="status-header">
         <div class="status-indicator checking" id="backend-indicator"></div>
-        <span class="status-title">Backend Server</span>
+        <span class="status-name">Backend Server</span>
+        <span class="status-badge checking" id="backend-badge">checking</span>
       </div>
-      <div class="status-details" id="backend-details">
-        Checking connection...
-      </div>
+      <div class="status-details" id="backend-details"></div>
     </div>
     
-    <div class="status-card" id="db-status">
+    <div class="status-card" id="db-card">
       <div class="status-header">
         <div class="status-indicator checking" id="db-indicator"></div>
-        <span class="status-title">Database</span>
+        <span class="status-name">Database</span>
+        <span class="status-badge checking" id="db-badge">checking</span>
       </div>
-      <div class="status-details" id="db-details">
-        Waiting for backend check...
-      </div>
+      <div class="status-details" id="db-details"></div>
     </div>
     
-    <div class="status-card" id="notes-status">
+    <div class="status-card" id="notes-card">
       <div class="status-header">
         <div class="status-indicator checking" id="notes-indicator"></div>
-        <span class="status-title">Notes Endpoint</span>
+        <span class="status-name">Notes API</span>
+        <span class="status-badge checking" id="notes-badge">checking</span>
       </div>
-      <div class="status-details" id="notes-details">
-        Waiting for backend check...
+      <div class="status-details" id="notes-details"></div>
+    </div>
+    
+    <div class="config-box">
+      <h3>Configuration</h3>
+      <div class="config-row">
+        <span class="config-label">Environment</span>
+        <span class="config-value" id="env-type">—</span>
+      </div>
+      <div class="config-row">
+        <span class="config-label">API</span>
+        <span class="config-value"><code id="api-url">—</code></span>
       </div>
     </div>
     
-    <div class="actions">
-      <button class="btn btn-primary" onclick="runAllChecks()">Run All Checks</button>
-      <button class="btn btn-secondary" onclick="window.location.href='admin.html'">View Notes</button>
-      <button class="btn btn-secondary" onclick="window.location.href='index.html'">Back to Letter</button>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="runAllChecks()">Refresh</button>
+      <button class="btn btn-ghost" onclick="location.href='admin.html'">View Notes</button>
+      <button class="btn btn-ghost" onclick="location.href='index.html'">Back to Letter</button>
     </div>
     
-    <div class="info-box" id="config-info">
-      <h3>Current Configuration</h3>
-      <ul>
-        <li><strong>Environment:</strong> <span id="env-type">-</span></li>
-        <li><strong>API URL:</strong> <code id="api-url">-</code></li>
-      </ul>
-    </div>
-    
-    <div class="info-box" id="fix-instructions" style="display: none;">
-      <h3>How to Fix</h3>
-      <ul id="fix-list"></ul>
-    </div>
-    
-    <p class="timestamp" id="timestamp">Last checked: -</p>
+    <p class="timestamp" id="timestamp"></p>
   </div>
   
   <script src="js/config.js"></script>
   <script>
-    // Show config info
-    document.getElementById('env-type').textContent = 
-      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
-        ? 'Local Development' 
-        : 'Production';
-    document.getElementById('api-url').textContent = CONFIG.API_BASE;
+    const $ = id => document.getElementById(id);
     
-    function setStatus(id, status, details) {
-      const indicator = document.getElementById(`${id}-indicator`);
-      const detailsEl = document.getElementById(`${id}-details`);
-      
-      indicator.className = `status-indicator ${status}`;
-      detailsEl.innerHTML = details;
-    }
+    $('env-type').textContent = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') 
+      ? 'Local' : 'Production';
+    $('api-url').textContent = CONFIG.API_BASE;
     
-    function showFixInstructions(instructions) {
-      const box = document.getElementById('fix-instructions');
-      const list = document.getElementById('fix-list');
-      
-      if (instructions.length > 0) {
-        list.innerHTML = instructions.map(i => `<li>${i}</li>`).join('');
-        box.style.display = 'block';
-      } else {
-        box.style.display = 'none';
-      }
+    function setStatus(id, status, detail) {
+      $(`${id}-indicator`).className = `status-indicator ${status}`;
+      $(`${id}-badge`).className = `status-badge ${status}`;
+      $(`${id}-badge`).textContent = status === 'ok' ? 'online' : status === 'error' ? 'offline' : 'checking';
+      $(`${id}-details`).innerHTML = detail || '';
     }
     
     async function checkBackend() {
-      setStatus('backend', 'checking', 'Checking connection...');
-      
+      setStatus('backend', 'checking', '');
       try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10000);
-        
-        const response = await fetch(CONFIG.API_HEALTH, {
-          signal: controller.signal
-        });
-        clearTimeout(timeout);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        setStatus('backend', 'ok', `
-          <p class="success-msg">✓ Backend is online</p>
-          <p>Server responded with status: <code>${data.status}</code></p>
-        `);
-        
+        const res = await fetch(CONFIG.API_HEALTH, { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setStatus('backend', 'ok', `Responding at <code>${CONFIG.API_BASE}</code>`);
         return data;
-      } catch (error) {
-        const errorMsg = error.name === 'AbortError' ? 'Request timed out (10s)' : error.message;
-        
-        setStatus('backend', 'error', `
-          <p class="error-msg">✗ Cannot connect to backend</p>
-          <p>URL: <code>${CONFIG.API_HEALTH}</code></p>
-          <p>Error: ${errorMsg}</p>
-        `);
-        
+      } catch (e) {
+        setStatus('backend', 'error', `Cannot reach <code>${CONFIG.API_BASE}</code>`);
         return null;
       }
     }
     
-    function checkDatabase(healthData) {
-      if (!healthData) {
-        setStatus('db', 'error', `
-          <p class="error-msg">✗ Cannot check database (backend offline)</p>
-        `);
+    function checkDatabase(health) {
+      if (!health) {
+        setStatus('db', 'error', 'Backend offline');
         return false;
       }
-      
-      if (healthData.dbConnected && healthData.dbType) {
-        setStatus('db', 'ok', `
-          <p class="success-msg">✓ Database connected</p>
-          <p>Type: <code>${healthData.dbType}</code></p>
-        `);
+      if (health.dbConnected) {
+        setStatus('db', 'ok', `Type: <code>${health.dbType}</code>`);
         return true;
-      } else {
-        setStatus('db', 'error', `
-          <p class="error-msg">✗ Database not connected</p>
-          <p>dbType: <code>${healthData.dbType || 'not set'}</code></p>
-          <p>dbConnected: <code>${healthData.dbConnected}</code></p>
-        `);
-        return false;
       }
+      setStatus('db', 'error', 'Not connected');
+      return false;
     }
     
     async function checkNotes() {
-      setStatus('notes', 'checking', 'Checking notes endpoint...');
-      
+      setStatus('notes', 'checking', '');
       try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10000);
-        
-        const response = await fetch(CONFIG.API_NOTES, {
-          signal: controller.signal
-        });
-        clearTimeout(timeout);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const data = await response.json();
-        const count = data.notes ? data.notes.length : 0;
-        
-        setStatus('notes', 'ok', `
-          <p class="success-msg">✓ Notes endpoint working</p>
-          <p>Notes in database: <code>${count}</code></p>
-        `);
-        
+        const res = await fetch(CONFIG.API_NOTES, { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const count = data.notes?.length || 0;
+        setStatus('notes', 'ok', `${count} note${count !== 1 ? 's' : ''} stored`);
         return true;
-      } catch (error) {
-        const errorMsg = error.name === 'AbortError' ? 'Request timed out (10s)' : error.message;
-        
-        setStatus('notes', 'error', `
-          <p class="error-msg">✗ Notes endpoint failed</p>
-          <p>Error: ${errorMsg}</p>
-        `);
-        
+      } catch (e) {
+        setStatus('notes', 'error', 'Endpoint unavailable');
         return false;
       }
     }
     
     async function runAllChecks() {
-      document.getElementById('timestamp').textContent = `Last checked: ${new Date().toLocaleString()}`;
-      
-      const fixes = [];
-      
-      // Check backend
-      const healthData = await checkBackend();
-      
-      if (!healthData) {
-        fixes.push('Make sure your Railway service is deployed and online');
-        fixes.push('Check Railway dashboard for deployment errors');
-        fixes.push('Verify the URL in <code>js/config.js</code> matches your Railway URL');
-      }
-      
-      // Check database
-      const dbOk = checkDatabase(healthData);
-      
-      if (healthData && !dbOk) {
-        fixes.push('Add a PostgreSQL database to your Railway project');
-        fixes.push('Make sure the database is linked to your service (DATABASE_URL should be auto-set)');
-        fixes.push('Check Railway logs for database connection errors');
-      }
-      
-      // Check notes endpoint
-      const notesOk = await checkNotes();
-      
-      if (!notesOk && healthData) {
-        fixes.push('Database may not have the notes table - redeploy to create it');
-      }
-      
-      // Show fix instructions
-      showFixInstructions(fixes);
-      
-      // All good?
-      if (healthData && dbOk && notesOk) {
-        showFixInstructions([]);
-      }
+      $('timestamp').textContent = `Last checked: ${new Date().toLocaleTimeString()}`;
+      const health = await checkBackend();
+      checkDatabase(health);
+      await checkNotes();
     }
     
-    // Run checks on load
     runAllChecks();
   </script>
 </body>

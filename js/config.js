@@ -1,38 +1,23 @@
 /**
- * Configuration for the Living Letter site
- * 
- * ⚡ UPDATE RAILWAY_URL AFTER DEPLOYING YOUR BACKEND ⚡
+ * Living Letter - Configuration
  */
 
 const CONFIG = {
-  // ============================================
-  // Railway Backend URL
-  // ============================================
+  // Railway backend URL
   RAILWAY_URL: 'https://living-letter-production.up.railway.app',
   
-  // Local development URL (no need to change)
+  // Local development
   LOCAL_URL: 'http://localhost:3001',
   
-  // ============================================
-  // API URL Selection (automatic)
-  // ============================================
+  // Auto-detect environment
   get API_BASE() {
-    const isLocal = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
+    const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
     return isLocal ? this.LOCAL_URL : this.RAILWAY_URL;
   },
   
-  get API_SUBMIT() {
-    return `${this.API_BASE}/api/submit`;
-  },
-  
-  get API_NOTES() {
-    return `${this.API_BASE}/api/notes`;
-  },
-  
-  get API_HEALTH() {
-    return `${this.API_BASE}/api/health`;
-  }
+  get API_SUBMIT() { return `${this.API_BASE}/api/submit`; },
+  get API_NOTES() { return `${this.API_BASE}/api/notes`; },
+  get API_HEALTH() { return `${this.API_BASE}/api/health`; }
 };
 
 window.CONFIG = CONFIG;

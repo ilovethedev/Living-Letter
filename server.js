@@ -1,319 +1,241 @@
 /**
- * Simple backend server for saving note submissions
+ * Living Letter - Backend API Server
  * 
- * Run with: node server.js
- * Or with nodemon for auto-reload: npx nodemon server.js
+ * Endpoints:
+ *   GET  /api/health  - Health check
+ *   POST /api/submit  - Submit a note
+ *   GET  /api/notes   - Retrieve all notes
  * 
- * Uses PostgreSQL on Railway (via DATABASE_URL) or SQLite locally
+ * Uses PostgreSQL on Railway (DATABASE_URL) or SQLite locally
  */
 
 const http = require('http');
-const url = require('url');
-const { parse } = require('querystring');
+const { URL } = require('url');
 
 const PORT = process.env.PORT || 3001;
 const DATABASE_URL = process.env.DATABASE_URL;
-const RAILWAY_ENVIRONMENT = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_ENVIRONMENT_ID;
 
-// Use PostgreSQL if DATABASE_URL is set (Railway), otherwise SQLite (local)
-// On Railway, we MUST have DATABASE_URL, so fail fast if it's missing
-let db;
-let dbType;
+let db = null;
+let dbType = null;
 
-// Initialize database and start server
-function initializeDatabase() {
-  return new Promise((resolve, reject) => {
-    // On Railway, DATABASE_URL is required
-    if (RAILWAY_ENVIRONMENT && !DATABASE_URL) {
-      console.error('ERROR: Railway environment detected but DATABASE_URL is not set!');
-      console.error('Please add a PostgreSQL database to your Railway project.');
-      reject(new Error('DATABASE_URL required on Railway but not set'));
-      return;
-    }
+// ============================================
+// Database Initialization
+// ============================================
+
+async function initDatabase() {
+  if (DATABASE_URL) {
+    // PostgreSQL (Railway)
+    const { Client } = require('pg');
+    dbType = 'postgresql';
     
-    if (DATABASE_URL) {
-      // PostgreSQL (Railway production)
-      const { Client } = require('pg');
-      dbType = 'postgresql';
-      
-      // Railway PostgreSQL requires SSL
-      // Check if connection string includes SSL requirement or if we're on Railway
-      const needsSSL = DATABASE_URL.includes('railway') || RAILWAY_ENVIRONMENT;
-      
-      const client = new Client({
-        connectionString: DATABASE_URL,
-        ssl: needsSSL ? { rejectUnauthorized: false } : false
+    const client = new Client({
+      connectionString: DATABASE_URL,
+      ssl: { rejectUnauthorized: false }
+    });
+    
+    await client.connect();
+    console.log('✓ Connected to PostgreSQL');
+    
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS notes (
+        id SERIAL PRIMARY KEY,
+        note_id TEXT NOT NULL,
+        note_prompt TEXT,
+        context TEXT,
+        message TEXT NOT NULL,
+        email TEXT,
+        timestamp TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    db = client;
+  } else {
+    // SQLite (local development)
+    const sqlite3 = require('sqlite3').verbose();
+    const path = require('path');
+    dbType = 'sqlite';
+    
+    db = await new Promise((resolve, reject) => {
+      const conn = new sqlite3.Database(path.join(__dirname, 'notes.db'), err => {
+        if (err) reject(err);
+        else resolve(conn);
       });
-      
-      console.log('Connecting to PostgreSQL...', { hasSSL: needsSSL, hasRailwayEnv: !!RAILWAY_ENVIRONMENT });
-      
-      client.connect()
-        .then(() => {
-          console.log('Connected to PostgreSQL database');
-          // Create table if it doesn't exist
-          return client.query(`
-            CREATE TABLE IF NOT EXISTS notes (
-              id SERIAL PRIMARY KEY,
-              note_id TEXT NOT NULL,
-              note_prompt TEXT,
-              context TEXT,
-              message TEXT NOT NULL,
-              email TEXT,
-              timestamp TEXT NOT NULL,
-              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-          `);
-        })
-        .then(() => {
-          console.log('Database table ready');
-          db = client;
-          resolve();
-        })
-        .catch(err => {
-          console.error('Database connection error:', err);
-          reject(err);
-        });
-    } else {
-      // SQLite (local development)
-      const sqlite3 = require('sqlite3').verbose();
-      const path = require('path');
-      const DB_PATH = path.join(__dirname, 'notes.db');
-      
-      dbType = 'sqlite';
-      db = new sqlite3.Database(DB_PATH, (err) => {
-        if (err) {
-          console.error('Error opening database:', err);
-          reject(err);
-        } else {
-          console.log('Connected to SQLite database');
-          // Create table if it doesn't exist
-          db.run(`
-            CREATE TABLE IF NOT EXISTS notes (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              note_id TEXT NOT NULL,
-              note_prompt TEXT,
-              context TEXT,
-              message TEXT NOT NULL,
-              email TEXT,
-              timestamp TEXT NOT NULL,
-              created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-          `, (err) => {
-            if (err) {
-              console.error('Error creating table:', err);
-              reject(err);
-            } else {
-              console.log('Database table ready');
-              resolve();
-            }
-          });
-        }
-      });
-    }
-  });
+    });
+    
+    await new Promise((resolve, reject) => {
+      db.run(`
+        CREATE TABLE IF NOT EXISTS notes (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          note_id TEXT NOT NULL,
+          note_prompt TEXT,
+          context TEXT,
+          message TEXT NOT NULL,
+          email TEXT,
+          timestamp TEXT NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `, err => err ? reject(err) : resolve());
+    });
+    
+    console.log('✓ Connected to SQLite');
+  }
+  
+  console.log(`✓ Database ready (${dbType})`);
 }
 
-// CORS headers
-const corsHeaders = {
+// ============================================
+// Database Operations
+// ============================================
+
+async function insertNote(data) {
+  const values = [
+    data.noteId,
+    data.notePrompt || null,
+    data.context || null,
+    data.message,
+    data.email || null,
+    data.timestamp || new Date().toISOString()
+  ];
+  
+  if (dbType === 'postgresql') {
+    const result = await db.query(
+      `INSERT INTO notes (note_id, note_prompt, context, message, email, timestamp)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+      values
+    );
+    return result.rows[0].id;
+  } else {
+    return new Promise((resolve, reject) => {
+      db.run(
+        `INSERT INTO notes (note_id, note_prompt, context, message, email, timestamp)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        values,
+        function(err) {
+          if (err) reject(err);
+          else resolve(this.lastID);
+        }
+      );
+    });
+  }
+}
+
+async function getAllNotes() {
+  if (dbType === 'postgresql') {
+    const result = await db.query('SELECT * FROM notes ORDER BY created_at DESC');
+    return result.rows;
+  } else {
+    return new Promise((resolve, reject) => {
+      db.all('SELECT * FROM notes ORDER BY created_at DESC', [], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
+  }
+}
+
+// ============================================
+// HTTP Server
+// ============================================
+
+const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Content-Type': 'application/json'
 };
 
-const server = http.createServer((req, res) => {
-  const parsedUrl = url.parse(req.url, true);
-  
-  // Log incoming requests (for debugging)
-  console.log(`${req.method} ${parsedUrl.pathname} - DB type: ${dbType || 'not initialized'}`);
-  
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    res.writeHead(200, corsHeaders);
-    res.end();
-    return;
-  }
-  
-  // Health check endpoint
-  if (req.method === 'GET' && parsedUrl.pathname === '/api/health') {
-    res.writeHead(200, corsHeaders);
-    res.end(JSON.stringify({ 
-      status: 'ok',
-      dbType: dbType || 'not initialized',
-      dbConnected: !!db,
-      timestamp: new Date().toISOString()
-    }));
-    return;
-  }
-  
-  // POST /api/submit - Save a note submission
-  if (req.method === 'POST' && parsedUrl.pathname === '/api/submit') {
-    // Check if database is ready
-    if (!db || !dbType) {
-      console.error('Database not initialized! dbType:', dbType, 'db:', !!db);
-      res.writeHead(503, corsHeaders);
-      res.end(JSON.stringify({ error: 'Database not initialized' }));
-      return;
-    }
-    
+function json(res, status, data) {
+  res.writeHead(status, CORS);
+  res.end(JSON.stringify(data));
+}
+
+function parseBody(req) {
+  return new Promise((resolve, reject) => {
     let body = '';
-    
-    req.on('data', chunk => {
-      body += chunk.toString();
-    });
-    
+    req.on('data', chunk => body += chunk);
     req.on('end', () => {
-      try {
-        const data = JSON.parse(body);
-        console.log('Received submission:', { noteId: data.noteId, messageLength: data.message?.length });
-        
-        // Validate required fields
-        if (!data.message || !data.noteId) {
-          console.error('Validation failed:', { hasMessage: !!data.message, hasNoteId: !!data.noteId });
-          res.writeHead(400, corsHeaders);
-          res.end(JSON.stringify({ error: 'Missing required fields: message and noteId' }));
-          return;
-        }
-        
-        const values = [
-          data.noteId,
-          data.notePrompt || null,
-          data.context || null,
-          data.message,
-          data.email || null,
-          data.timestamp || new Date().toISOString()
-        ];
-        
-        // Insert into database (PostgreSQL or SQLite)
-        if (dbType === 'postgresql') {
-          // PostgreSQL
-          db.query(
-            `INSERT INTO notes (note_id, note_prompt, context, message, email, timestamp)
-             VALUES ($1, $2, $3, $4, $5, $6)
-             RETURNING id`,
-            values
-          )
-          .then(result => {
-            const id = result.rows[0].id;
-            console.log(`Note saved: ID ${id}`);
-            res.writeHead(200, corsHeaders);
-            res.end(JSON.stringify({ 
-              success: true, 
-              id: id 
-            }));
-          })
-          .catch(err => {
-            console.error('PostgreSQL database error:', err.message);
-            console.error('Full error:', err);
-            res.writeHead(500, corsHeaders);
-            res.end(JSON.stringify({ error: 'Failed to save note', details: err.message }));
-          });
-        } else {
-          // SQLite
-          db.run(
-            `INSERT INTO notes (note_id, note_prompt, context, message, email, timestamp)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            values,
-            function(err) {
-              if (err) {
-                console.error('SQLite database error:', err.message);
-                console.error('Full error:', err);
-                res.writeHead(500, corsHeaders);
-                res.end(JSON.stringify({ error: 'Failed to save note', details: err.message }));
-              } else {
-                console.log(`Note saved: ID ${this.lastID}`);
-                res.writeHead(200, corsHeaders);
-                res.end(JSON.stringify({ 
-                  success: true, 
-                  id: this.lastID 
-                }));
-              }
-            }
-          );
-        }
-      } catch (err) {
-        console.error('Parse error:', err);
-        res.writeHead(400, corsHeaders);
-        res.end(JSON.stringify({ error: 'Invalid JSON' }));
-      }
+      try { resolve(JSON.parse(body)); }
+      catch { reject(new Error('Invalid JSON')); }
     });
+    req.on('error', reject);
+  });
+}
+
+const server = http.createServer(async (req, res) => {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const path = url.pathname;
+  
+  // CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200, CORS);
+    return res.end();
   }
   
-  // GET /api/notes - Retrieve all notes (for your viewing)
-  else if (req.method === 'GET' && parsedUrl.pathname === '/api/notes') {
-    if (dbType === 'postgresql') {
-      // PostgreSQL
-      db.query('SELECT * FROM notes ORDER BY created_at DESC')
-        .then(result => {
-          res.writeHead(200, corsHeaders);
-          res.end(JSON.stringify({ notes: result.rows }));
-        })
-        .catch(err => {
-          console.error('Database error:', err);
-          res.writeHead(500, corsHeaders);
-          res.end(JSON.stringify({ error: 'Failed to retrieve notes' }));
-        });
-    } else {
-      // SQLite
-      db.all(
-        'SELECT * FROM notes ORDER BY created_at DESC',
-        [],
-        (err, rows) => {
-          if (err) {
-            console.error('Database error:', err);
-            res.writeHead(500, corsHeaders);
-            res.end(JSON.stringify({ error: 'Failed to retrieve notes' }));
-          } else {
-            res.writeHead(200, corsHeaders);
-            res.end(JSON.stringify({ notes: rows }));
-          }
-        }
-      );
+  try {
+    // Health check
+    if (req.method === 'GET' && path === '/api/health') {
+      return json(res, 200, {
+        status: 'ok',
+        dbType,
+        dbConnected: !!db,
+        timestamp: new Date().toISOString()
+      });
     }
-  }
-  
-  else {
-    res.writeHead(404, corsHeaders);
-    res.end(JSON.stringify({ error: 'Not found' }));
+    
+    // Submit note
+    if (req.method === 'POST' && path === '/api/submit') {
+      if (!db) return json(res, 503, { error: 'Database not ready' });
+      
+      const data = await parseBody(req);
+      
+      if (!data.message || !data.noteId) {
+        return json(res, 400, { error: 'Missing required fields' });
+      }
+      
+      const id = await insertNote(data);
+      console.log(`Note saved: #${id}`);
+      return json(res, 200, { success: true, id });
+    }
+    
+    // Get notes
+    if (req.method === 'GET' && path === '/api/notes') {
+      if (!db) return json(res, 503, { error: 'Database not ready' });
+      
+      const notes = await getAllNotes();
+      return json(res, 200, { notes });
+    }
+    
+    // Not found
+    json(res, 404, { error: 'Not found' });
+    
+  } catch (err) {
+    console.error('Error:', err.message);
+    json(res, 500, { error: err.message });
   }
 });
 
-// Initialize database and start server
-initializeDatabase()
+// ============================================
+// Startup
+// ============================================
+
+initDatabase()
   .then(() => {
     server.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-      console.log(`API endpoint: http://localhost:${PORT}/api/submit`);
-      console.log(`View notes: http://localhost:${PORT}/api/notes`);
-      console.log(`Database type: ${dbType}`);
+      console.log(`✓ Server running on port ${PORT}`);
     });
   })
   .catch(err => {
-    console.error('Failed to initialize database:', err);
+    console.error('Failed to start:', err);
     process.exit(1);
   });
 
 // Graceful shutdown
-process.on('SIGINT', () => {
-  console.log('\nShutting down...');
-  if (dbType === 'postgresql') {
-    db.end()
-      .then(() => {
-        console.log('Database closed');
-        process.exit(0);
-      })
-      .catch(err => {
-        console.error('Error closing database:', err);
-        process.exit(1);
-      });
-  } else {
-    db.close((err) => {
-      if (err) {
-        console.error('Error closing database:', err);
-      } else {
-        console.log('Database closed');
-      }
-      process.exit(0);
-    });
-  }
+process.on('SIGTERM', () => {
+  console.log('Shutting down...');
+  server.close(() => {
+    if (dbType === 'postgresql') db.end();
+    else db.close();
+    process.exit(0);
+  });
 });
