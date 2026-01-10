@@ -2,7 +2,7 @@
 # Forces Node.js detection (prevents "Detected Staticfile" error)
 
 [phases.setup]
-nixPkgs = ["nodejs_18", "npm"]
+nixPkgs = ["nodejs_20", "npm"]
 
 [phases.install]
 cmds = ["npm ci || npm install"]
