@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Status - Living Letter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Crimson Pro', serif;
+      background: #fff9f0;
+      color: #2c2c2c;
+      line-height: 1.6;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: #5b5bd6;
+    }
+    
+    .subtitle {
+      color: rgba(44, 44, 44, 0.6);
+      margin-bottom: 2rem;
+    }
+    
+    .status-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border: 1px solid rgba(44, 44, 44, 0.1);
+    }
+    
+    .status-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    
+    .status-indicator.checking { background: #ffc107; animation: pulse 1s infinite; }
+    .status-indicator.ok { background: #4caf50; }
+    .status-indicator.error { background: #f44336; }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .status-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    
+    .status-details {
+      font-size: 0.9rem;
+      color: rgba(44, 44, 44, 0.7);
+      margin-left: 1.5rem;
+    }
+    
+    .status-details code {
+      background: rgba(91, 91, 214, 0.1);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    
+    .status-details .error-msg {
+      color: #d32f2f;
+      margin-top: 0.5rem;
+    }
+    
+    .status-details .success-msg {
+      color: #2e7d32;
+      margin-top: 0.5rem;
+    }
+    
+    .actions {
+      margin-top: 2rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Crimson Pro', serif;
+      font-size: 1rem;
+      border: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    .btn-primary {
+      background: #5b5bd6;
+      color: white;
+      box-shadow: 0 4px 12px rgba(91, 91, 214, 0.3);
+    }
+    
+    .btn-secondary {
+      background: white;
+      color: #5b5bd6;
+      border: 1px solid #5b5bd6;
+    }
+    
+    .info-box {
+      background: rgba(91, 91, 214, 0.1);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+    
+    .info-box h3 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: #5b5bd6;
+    }
+    
+    .info-box ul {
+      margin-left: 1.25rem;
+    }
+    
+    .info-box li {
+      margin-bottom: 0.25rem;
+    }
+    
+    .timestamp {
+      font-size: 0.8rem;
+      color: rgba(44, 44, 44, 0.5);
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>System Status</h1>
+    <p class="subtitle">Connection diagnostics for your Living Letter</p>
+    
+    <div class="status-card" id="backend-status">
+      <div class="status-header">
+        <div class="status-indicator checking" id="backend-indicator"></div>
+        <span class="status-title">Backend Server</span>
+      </div>
+      <div class="status-details" id="backend-details">
+        Checking connection...
+      </div>
+    </div>
+    
+    <div class="status-card" id="db-status">
+      <div class="status-header">
+        <div class="status-indicator checking" id="db-indicator"></div>
+        <span class="status-title">Database</span>
+      </div>
+      <div class="status-details" id="db-details">
+        Waiting for backend check...
+      </div>
+    </div>
+    
+    <div class="status-card" id="notes-status">
+      <div class="status-header">
+        <div class="status-indicator checking" id="notes-indicator"></div>
+        <span class="status-title">Notes Endpoint</span>
+      </div>
+      <div class="status-details" id="notes-details">
+        Waiting for backend check...
+      </div>
+    </div>
+    
+    <div class="actions">
+      <button class="btn btn-primary" onclick="runAllChecks()">Run All Checks</button>
+      <button class="btn btn-secondary" onclick="window.location.href='admin.html'">View Notes</button>
+      <button class="btn btn-secondary" onclick="window.location.href='index.html'">Back to Letter</button>
+    </div>
+    
+    <div class="info-box" id="config-info">
+      <h3>Current Configuration</h3>
+      <ul>
+        <li><strong>Environment:</strong> <span id="env-type">-</span></li>
+        <li><strong>API URL:</strong> <code id="api-url">-</code></li>
+      </ul>
+    </div>
+    
+    <div class="info-box" id="fix-instructions" style="display: none;">
+      <h3>How to Fix</h3>
+      <ul id="fix-list"></ul>
+    </div>
+    
+    <p class="timestamp" id="timestamp">Last checked: -</p>
+  </div>
+  
+  <script src="js/config.js"></script>
+  <script>
+    // Show config info
+    document.getElementById('env-type').textContent = 
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+        ? 'Local Development' 
+        : 'Production';
+    document.getElementById('api-url').textContent = CONFIG.API_BASE;
+    
+    function setStatus(id, status, details) {
+      const indicator = document.getElementById(`${id}-indicator`);
+      const detailsEl = document.getElementById(`${id}-details`);
+      
+      indicator.className = `status-indicator ${status}`;
+      detailsEl.innerHTML = details;
+    }
+    
+    function showFixInstructions(instructions) {
+      const box = document.getElementById('fix-instructions');
+      const list = document.getElementById('fix-list');
+      
+      if (instructions.length > 0) {
+        list.innerHTML = instructions.map(i => `<li>${i}</li>`).join('');
+        box.style.display = 'block';
+      } else {
+        box.style.display = 'none';
+      }
+    }
+    
+    async function checkBackend() {
+      setStatus('backend', 'checking', 'Checking connection...');
+      
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+        
+        const response = await fetch(CONFIG.API_HEALTH, {
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        setStatus('backend', 'ok', `
+          <p class="success-msg">✓ Backend is online</p>
+          <p>Server responded with status: <code>${data.status}</code></p>
+        `);
+        
+        return data;
+      } catch (error) {
+        const errorMsg = error.name === 'AbortError' ? 'Request timed out (10s)' : error.message;
+        
+        setStatus('backend', 'error', `
+          <p class="error-msg">✗ Cannot connect to backend</p>
+          <p>URL: <code>${CONFIG.API_HEALTH}</code></p>
+          <p>Error: ${errorMsg}</p>
+        `);
+        
+        return null;
+      }
+    }
+    
+    function checkDatabase(healthData) {
+      if (!healthData) {
+        setStatus('db', 'error', `
+          <p class="error-msg">✗ Cannot check database (backend offline)</p>
+        `);
+        return false;
+      }
+      
+      if (healthData.dbConnected && healthData.dbType) {
+        setStatus('db', 'ok', `
+          <p class="success-msg">✓ Database connected</p>
+          <p>Type: <code>${healthData.dbType}</code></p>
+        `);
+        return true;
+      } else {
+        setStatus('db', 'error', `
+          <p class="error-msg">✗ Database not connected</p>
+          <p>dbType: <code>${healthData.dbType || 'not set'}</code></p>
+          <p>dbConnected: <code>${healthData.dbConnected}</code></p>
+        `);
+        return false;
+      }
+    }
+    
+    async function checkNotes() {
+      setStatus('notes', 'checking', 'Checking notes endpoint...');
+      
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+        
+        const response = await fetch(CONFIG.API_NOTES, {
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const count = data.notes ? data.notes.length : 0;
+        
+        setStatus('notes', 'ok', `
+          <p class="success-msg">✓ Notes endpoint working</p>
+          <p>Notes in database: <code>${count}</code></p>
+        `);
+        
+        return true;
+      } catch (error) {
+        const errorMsg = error.name === 'AbortError' ? 'Request timed out (10s)' : error.message;
+        
+        setStatus('notes', 'error', `
+          <p class="error-msg">✗ Notes endpoint failed</p>
+          <p>Error: ${errorMsg}</p>
+        `);
+        
+        return false;
+      }
+    }
+    
+    async function runAllChecks() {
+      document.getElementById('timestamp').textContent = `Last checked: ${new Date().toLocaleString()}`;
+      
+      const fixes = [];
+      
+      // Check backend
+      const healthData = await checkBackend();
+      
+      if (!healthData) {
+        fixes.push('Make sure your Railway service is deployed and online');
+        fixes.push('Check Railway dashboard for deployment errors');
+        fixes.push('Verify the URL in <code>js/config.js</code> matches your Railway URL');
+      }
+      
+      // Check database
+      const dbOk = checkDatabase(healthData);
+      
+      if (healthData && !dbOk) {
+        fixes.push('Add a PostgreSQL database to your Railway project');
+        fixes.push('Make sure the database is linked to your service (DATABASE_URL should be auto-set)');
+        fixes.push('Check Railway logs for database connection errors');
+      }
+      
+      // Check notes endpoint
+      const notesOk = await checkNotes();
+      
+      if (!notesOk && healthData) {
+        fixes.push('Database may not have the notes table - redeploy to create it');
+      }
+      
+      // Show fix instructions
+      showFixInstructions(fixes);
+      
+      // All good?
+      if (healthData && dbOk && notesOk) {
+        showFixInstructions([]);
+      }
+    }
+    
+    // Run checks on load
+    runAllChecks();
+  </script>
+</body>
+</html>

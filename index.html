@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ldf — a living letter</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Decorative sparkles -->
+  <div class="sparkle" style="top: 10%; left: 6%;">✦</div>
+  <div class="sparkle" style="top: 18%; right: 10%;">✧</div>
+  <div class="sparkle" style="top: 32%; left: 4%;">·</div>
+  <div class="sparkle" style="top: 45%; right: 5%;">✦</div>
+  <div class="sparkle" style="top: 58%; left: 8%;">✧</div>
+  <div class="sparkle" style="top: 72%; right: 12%;">·</div>
+  <div class="sparkle" style="top: 85%; left: 5%;">✦</div>
+  <div class="sparkle" style="top: 92%; right: 4%;">✧</div>
+
+  <nav class="top-nav" aria-label="Site">
+    <a class="top-nav__link" href="index.html" aria-current="page">Letter</a>
+    <a class="top-nav__link" href="writing.html">Writing</a>
+    <a class="top-nav__link" href="reading.html">Reading</a>
+  </nav>
+  
+  <main class="page">
+    <article class="letter" id="letter">
+      <!-- SVG overlay used for hand-drawn circles/underlines on the text -->
+      <svg class="letter-doodles" id="letter-doodles" aria-hidden="true"></svg>
+      
+      <p class="letter-title">A Living Letter</p>
+      
+      <p class="greeting">hi, i'm ldf.</p>
+      
+      <p class="intro-hint">notes in the margins are questions for you</p>
+      
+      <p>
+        I'm a 
+        <span class="anchor" data-note-id="beginner">perpetual beginner</span>.
+      </p>
+      
+      <p>
+        I'm motivated by humanity's ability to expand individual freedom and flourishing — and by the interfaces that let us 
+        <span class="anchor" data-note-id="coordinate">coordinate at scale</span>.
+      </p>
+      
+      <p>
+        Over the last decade, I've worked in and around frontier domains reshaped by technology: crypto, social networking, gaming, ecommerce, and digital identity, across companies of every size and countless personal experiments in between. What I've come away with is a conviction that the next version of the internet won't just improve existing systems — it will 
+        <span class="anchor" data-note-id="invert">invert who the internet is built around</span>, 
+        shifting data, identity, and context out of platforms and back to the individual.
+      </p>
+      
+      <p>
+        For the last six years, I've worked closely on better money technology. One major form of coordination — monetary coordination — is 
+        <span class="anchor" data-note-id="limits">collapsing toward its physical limits</span>. 
+        Settlement, transfer, and verification are no longer constrained in the ways they once were. Their costs are approaching the cost of energy itself.
+      </p>
+      
+      <p>
+        This doesn't mean money is solved, but it does establish a baseline. When one foundational layer of coordination becomes that cheap, it becomes impossible to ignore how expensive everything else still is by comparison. Across healthcare, education, housing, and public administration, enormous amounts of human time, attention, and cognitive effort are still consumed by duplicated verification, administrative rituals, and legacy processes that persist more from institutional inertia than necessity.
+      </p>
+      
+      <p>
+        Working in this space has shifted my attention away from money itself and toward 
+        <span class="anchor" data-note-id="freed">what is freed up as its coordination costs collapse</span>. 
+        When one bottleneck recedes, others come into focus — and so do the choices we make about how to use the capacity that's returned.
+      </p>
+      
+      <p>
+        Better coordination doesn't just make systems more efficient. It changes where human effort is spent. When systems no longer require constant buffering against uncertainty and inefficiency, people recover time, attention, and planning horizon. Over time, this reshapes institutions, incentives, and what we treat as valuable.
+      </p>
+      
+      <p>
+        None of this is automatic. As coordination becomes easier, 
+        <span class="anchor" data-note-id="responsibility">responsibility becomes more concentrated</span>. 
+        Removing friction doesn't remove judgment — it raises the stakes of how we define goals and success. The risk isn't that we lack capability, but that we apply powerful tools toward inherited assumptions without examining whether they still deserve to scale.
+      </p>
+      
+      <p>
+        This is where the inversion I care about becomes tangible. When individuals carry their own data, identity, and context, platforms and institutions stop being the default centers of gravity. Applications are one expression of this shift, but they're not the point. The deeper change is about where value accrues, how trust is earned, and who gets to decide what matters.
+      </p>
+      
+      <p>
+        What I'm interested in is how judgment operates once coordination becomes easy. When friction disappears, rigor becomes essential — not just in how we build, but in what we choose to build at all. Some things should remain slow. Some decisions shouldn't be automated. Using returned capacity well is a responsibility, not an inevitability.
+      </p>
+      
+      <p>
+        This site is a 
+        <span class="anchor" data-note-id="living">living letter</span> 
+        — a place where I collect questions, fragments of thinking, and experiments in public. Some ideas here are finished. Many aren't. I use it to test assumptions, explore second- and third-order effects, and think through how these shifts play out across different companies, verticals, and problem spaces.
+      </p>
+      
+      <p>
+        I don't assume progress. I believe it's possible — but only if we build with intention, apply rigor to what we pursue, and take responsibility for how the systems we create shape human lives.
+      </p>
+      
+      <p>
+        If something here sparks a thought, a disagreement, or a connection, I'd love to hear it.
+      </p>
+    </article>
+    
+    <aside class="margins" id="margins">
+      <!-- SVG overlay used for playful margin doodles -->
+      <svg class="margin-doodles" id="margin-doodles" aria-hidden="true"></svg>
+      <!-- Notes are injected here by JavaScript -->
+    </aside>
+  </main>
+  
+  <div class="windows-layer" id="windows-layer">
+    <!-- Windows are injected here by JavaScript -->
+  </div>
+  
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
