@@ -6,9 +6,9 @@
 
 const CONFIG = {
   // ============================================
-  // 🔧 EDIT THIS AFTER DEPLOYING TO RAILWAY
+  // Railway Backend URL
   // ============================================
-  RAILWAY_URL: 'https://YOUR-APP-NAME.up.railway.app',
+  RAILWAY_URL: 'https://living-letter-production.up.railway.app',
   
   // Local development URL (no need to change)
   LOCAL_URL: 'http://localhost:3001',
